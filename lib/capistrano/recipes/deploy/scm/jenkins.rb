@@ -22,8 +22,8 @@ module Capistrano
           %Q{TMPDIR=`mktemp -d` &&
             cd "$TMPDIR" &&
             curl #{authentication} -sO '#{artifact_zip_url(revision)}' &&
-            unzip archive.zip &&
-            mv archive "#{destination}" &&
+            #{unzip_bin} #{artifact_archive_file} &&
+            mv #{archive_folder} "#{destination}" &&
             rm -rf "$TMPDIR"
           }
         end
@@ -55,6 +55,10 @@ module Capistrano
 
         def use_unstable?
           !!variable(:jenkins_use_unstable)
+        end
+
+        def use_tgz?
+          variable(:jenkins_archive_tgz)
         end
 
         def log_build_message(from, to=nil, message=nil)
@@ -141,7 +145,31 @@ module Capistrano
         end
 
         def artifact_zip_url(revision)
-          "#{repository}/#{revision}/artifact/*zip*/archive.zip"
+          if use_tgz?
+            "#{repository}/#{revision}/artifact/#{artifact_archive_file}"
+          else
+            "#{repository}/#{revision}/artifact/*zip*/archive.zip"
+          end
+        end
+
+        def artifact_archive_file
+          if use_tgz?
+            "archive.tgz"
+          else
+            "archive.zip"
+          end
+        end
+
+        def unzip_bin
+          if use_tgz?
+            "tar -xzvf"
+          else
+            "unzip"
+          end
+        end
+
+        def archive_folder
+          "archive"
         end
 
         def jenkins_username

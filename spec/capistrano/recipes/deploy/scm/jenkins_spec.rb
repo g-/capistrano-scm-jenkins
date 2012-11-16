@@ -27,6 +27,29 @@ module Capistrano::Deploy::SCM
         @jenkins.send(:last_deploy_build, msg).should == '1449'
         @jenkins.send(:last_deploy_build, msg, :use_unstable => true).should == '1450'
       end
+
+      it "should default the archive file to archive.zip" do
+        @jenkins.send(:artifact_archive_file).should == 'archive.zip'
+      end
+
+      it "should default the archive folder to archive" do
+        @jenkins.send(:archive_folder).should == 'archive'
+      end
+
+      it "should unzip tgz with tar -xzvf" do
+        @jenkins = Jenkins.new(:jenkins_archive_tgz => true)
+        @jenkins.send(:unzip_bin).should == 'tar -xzvf'
+      end
+
+      it "should return archive.tgz with tgz option" do
+        @jenkins = Jenkins.new(:jenkins_archive_tgz => true)
+        @jenkins.send(:artifact_archive_file).should == 'archive.tgz'
+      end
+
+      it "should return archive.tgz url with tgz option" do
+        @jenkins = Jenkins.new(:jenkins_archive_tgz => true)
+        @jenkins.send(:artifact_zip_url, 8).should == '/8/artifact/archive.tgz'
+      end
     end
   end
 end
